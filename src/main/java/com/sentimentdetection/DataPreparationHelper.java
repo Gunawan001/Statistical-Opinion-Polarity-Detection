@@ -1,5 +1,6 @@
 package com.sentimentdetection;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -53,7 +55,7 @@ public class DataPreparationHelper {
 		}
 
 		tagger = new MaxentTagger(this.getClass()
-				.getResource("/resources/POS_Tagged_Model/english-bidirectional-distsim.tagger").getFile());
+				.getResource("/POS_Tagged_Model/english-bidirectional-distsim.tagger").getFile());
 	}
 
 	/**
@@ -64,8 +66,8 @@ public class DataPreparationHelper {
 	 */
 	public void setNumStopWords(Document featureDoc) {
 		int numStopWordsFound = 0;
-		for (String word : stopWords) {
-			if (stopWords.contains(word.toLowerCase())) {
+		for (String word : featureDoc.getInputDoc()) {
+			if (stopWords.contains(word.trim().toLowerCase())) {
 				numStopWordsFound++;
 			}
 		}
@@ -82,7 +84,7 @@ public class DataPreparationHelper {
 		int numNounEntities = 0;
 		int numVerbs = 0;
 		int numAdjectives = 0;
-		
+
 		for (String sentence : featuresDoc.getInputDoc()) {
 			List<HasWord> sent = Sentence.toWordList(sentence.split(" "));
 			List<TaggedWord> taggedSent = tagger.tagSentence(sent);
@@ -100,8 +102,8 @@ public class DataPreparationHelper {
 					}
 				}
 			}
-		}	
-		
+		}
+
 		featuresDoc.setNumAdjectives(numAdjectives);
 		featuresDoc.setNumNouns(numNounEntities);
 		featuresDoc.setNumVerbs(numVerbs);
@@ -114,5 +116,21 @@ public class DataPreparationHelper {
 		DataPreparationHelper helper = new DataPreparationHelper();
 		helper.initialize(stopWordsFilePrefix);
 		System.out.println(helper.stopWords.size());
+		if (args.length != 1) {
+			System.out.println("Please provide input directory path for training:");
+			System.exit(0);
+		}
+		File parentFolder = new File(args[0]);
+		if (parentFolder.exists()) {
+			System.out.println("Training on");
+			File[] classes = parentFolder.listFiles();
+			for (File file : classes) {
+					Document document = new Document(FileUtils.readFileToString(file).split(SIMPLE_TOKENIZER_REGEX));
+					helper.setNumStopWords(document);
+					helper.setNLPFeatures(document);
+					System.out.println(document);
+					
+			}
+		}
 	}
 }

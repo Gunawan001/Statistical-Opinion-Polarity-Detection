@@ -6,14 +6,17 @@ public class Document {
 
 	private String[] inputDoc;
 	private int numStopWordsCount = 0;
-
 	private int numWords = 0;
-
 	private double positiveWordProportion;
 	private double negativeWordProportion;
 	private int numNouns;
 	private int numAdjectives;
 	private int numVerbs;
+
+	public Document(String[] inputDoc) {
+		super();
+		setInputDoc(inputDoc);
+	}
 
 	/**
 	 * @return the numVerbs
@@ -142,10 +145,10 @@ public class Document {
 	 */
 	@Override
 	public String toString() {
-		return "Features [inputDoc=" + Arrays.toString(inputDoc) + ", numStopWordsCount=" + numStopWordsCount
+		return "Features [ numStopWordsCount=" + numStopWordsCount
 				+ ", numWords=" + numWords + ", positiveWordProportion=" + positiveWordProportion
 				+ ", negativeWordProportion=" + negativeWordProportion + ", numNouns=" + numNouns + ", numAdjectives="
-				+ numAdjectives + "]";
+				+ numAdjectives +",inputDoc=" + Arrays.toString(inputDoc) +  "]";
 	}
 
 }
