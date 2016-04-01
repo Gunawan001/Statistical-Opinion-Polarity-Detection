@@ -109,7 +109,7 @@ public class DataPreparationHelper {
 							numNounEntities++;
 						} else if (tw.tag().startsWith(ADJECTIVE_PREFIX)) {
 							numAdjectives++;
-							SentimentType sentimentType = sentiExtractor.getSentimentForAdjective(tw.word(), sentence);
+							SentimentType sentimentType = sentiExtractor.getSentimentForAdjective(tw.word());
 							switch (sentimentType) {
 							case POSITIVE:
 								numPositives++;
@@ -123,7 +123,7 @@ public class DataPreparationHelper {
 							}
 						} else if (tw.tag().startsWith(VERB_PREFIX)) {
 							numVerbs++;
-							SentimentType sentimentType = sentiExtractor.getSentimentForAdjective(tw.word(), sentence);
+							SentimentType sentimentType = sentiExtractor.getSentimentForAdjective(tw.word());
 							switch (sentimentType) {
 							case POSITIVE:
 								numPositives++;
