@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.sentimentdetection.common.Document;
+import com.sentimentdetection.common.SentimentType;
 
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.Sentence;
@@ -30,12 +31,16 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
  *
  */
 public class DataPreparationHelper {
-	private static final String NOUN_PREFIX = "NN";
-	private static final String ADJECTIVE_PREFIX = "JJ";
-	private static final String VERB_PREFIX = "VB";
-	private static final String NON_ALPHABET_CHARS = "[^\\dA-Za-z ]";
-	private static final String SIMPLE_TOKENIZER_REGEX = "( |\t|\r|\n|\f)";
+	public static final String NOUN_PREFIX = "NN";
+	public static final String ADJECTIVE_PREFIX = "JJ";
+	public static final String VERB_PREFIX = "VB";
+	public static final String NON_ALPHABET_CHARS = "[^\\dA-Za-z ]";
+	public static final String SIMPLE_TOKENIZER_REGEX = "(\r|\n|\f)";
+	public static final String LINE_TOKENIZER_REGEX = "(\r|\n|\f)";
 	private Set<String> stopWords = new HashSet<String>();
+
+	WordSentimentExtractor sentiExtractor = new WordSentimentExtractor();
+
 	MaxentTagger tagger = null;
 
 	/**
@@ -54,8 +59,8 @@ public class DataPreparationHelper {
 			}
 		}
 
-		tagger = new MaxentTagger(this.getClass()
-				.getResource("/POS_Tagged_Model/english-bidirectional-distsim.tagger").getFile());
+		tagger = new MaxentTagger(
+				this.getClass().getResource("/POS_Tagged_Model/english-bidirectional-distsim.tagger").getFile());
 	}
 
 	/**
@@ -66,12 +71,18 @@ public class DataPreparationHelper {
 	 */
 	public void setNumStopWords(Document featureDoc) {
 		int numStopWordsFound = 0;
-		for (String word : featureDoc.getInputDoc()) {
-			if (stopWords.contains(word.trim().toLowerCase())) {
-				numStopWordsFound++;
+		int numCount=0;
+		for (String sentence : featureDoc.getInputDoc()) {
+			String[] split = sentence.split("( |\t)");
+			for (String word : split) {
+				numCount++;
+				if (stopWords.contains(word.trim().toLowerCase())) {
+					numStopWordsFound++;
+				}
 			}
 		}
-		featureDoc.setNumStopWordsCount(numStopWordsFound);
+		featureDoc.setStopWordsProportion((double)numStopWordsFound/numCount);
+		featureDoc.setNumWords(numCount);
 	}
 
 	/**
@@ -84,7 +95,9 @@ public class DataPreparationHelper {
 		int numNounEntities = 0;
 		int numVerbs = 0;
 		int numAdjectives = 0;
-
+		int numPositives = 0;
+		int numNegatives = 0;
+		int numNeutrals = 0;
 		for (String sentence : featuresDoc.getInputDoc()) {
 			List<HasWord> sent = Sentence.toWordList(sentence.split(" "));
 			List<TaggedWord> taggedSent = tagger.tagSentence(sent);
@@ -96,14 +109,39 @@ public class DataPreparationHelper {
 							numNounEntities++;
 						} else if (tw.tag().startsWith(ADJECTIVE_PREFIX)) {
 							numAdjectives++;
+							SentimentType sentimentType = sentiExtractor.getSentimentForAdjective(tw.word(), sentence);
+							switch (sentimentType) {
+							case POSITIVE:
+								numPositives++;
+								break;
+							case NEGATIVE:
+								numNegatives++;
+								break;
+							case NEUTRAL:
+								numNeutrals++;
+								break;
+							}
 						} else if (tw.tag().startsWith(VERB_PREFIX)) {
 							numVerbs++;
+							SentimentType sentimentType = sentiExtractor.getSentimentForAdjective(tw.word(), sentence);
+							switch (sentimentType) {
+							case POSITIVE:
+								numPositives++;
+								break;
+							case NEGATIVE:
+								numNegatives++;
+								break;
+							case NEUTRAL:
+								numNeutrals++;
+								break;
+							}
 						}
 					}
 				}
 			}
 		}
-
+		featuresDoc.setPositiveWordProportion(((double)numPositives/(numNeutrals+numPositives+numNegatives)));
+		featuresDoc.setNegativeWordProportion(((double)numNegatives/(numNeutrals+numPositives+numNegatives)));
 		featuresDoc.setNumAdjectives(numAdjectives);
 		featuresDoc.setNumNouns(numNounEntities);
 		featuresDoc.setNumVerbs(numVerbs);
@@ -111,11 +149,9 @@ public class DataPreparationHelper {
 
 	public static void main(String[] args) throws IOException {
 
-		String stopWordsFilePrefix = "stopwords.txt";
-
 		DataPreparationHelper helper = new DataPreparationHelper();
-		helper.initialize(stopWordsFilePrefix);
-		System.out.println(helper.stopWords.size());
+		helper.loadStopWordsAndSentiments();
+
 		if (args.length != 1) {
 			System.out.println("Please provide input directory path for training:");
 			System.exit(0);
@@ -125,12 +161,22 @@ public class DataPreparationHelper {
 			System.out.println("Training on");
 			File[] classes = parentFolder.listFiles();
 			for (File file : classes) {
-					Document document = new Document(FileUtils.readFileToString(file).split(SIMPLE_TOKENIZER_REGEX));
-					helper.setNumStopWords(document);
-					helper.setNLPFeatures(document);
-					System.out.println(document);
-					
+				Document document = new Document(FileUtils.readFileToString(file).split(SIMPLE_TOKENIZER_REGEX));
+				helper.setNumStopWords(document);
+				helper.setNLPFeatures(document);
+				System.out.println(document);
 			}
 		}
+	}
+
+	/**
+	 * @return
+	 * @throws IOException
+	 */
+	public void loadStopWordsAndSentiments() throws IOException {
+		sentiExtractor.loadSentiments("/SentiWordNet_3.0.0_20130122.txt");
+
+		String stopWordsFilePrefix = "stopwords.txt";
+		initialize(stopWordsFilePrefix);
 	}
 }

@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class Document {
 
 	private String[] inputDoc;
-	private int numStopWordsCount = 0;
+	private double stopWordsProportion= 0;
 	private int numWords = 0;
 	private double positiveWordProportion;
 	private double negativeWordProportion;
@@ -26,7 +26,8 @@ public class Document {
 	}
 
 	/**
-	 * @param numVerbs the numVerbs to set
+	 * @param numVerbs
+	 *            the numVerbs to set
 	 */
 	public void setNumVerbs(int numVerbs) {
 		this.numVerbs = numVerbs;
@@ -45,22 +46,21 @@ public class Document {
 	 */
 	public void setInputDoc(String[] inputDoc) {
 		this.inputDoc = inputDoc;
-		this.numWords = inputDoc.length;
 	}
 
 	/**
 	 * @return the numStopWordsCount
 	 */
-	public int getNumStopWordsCount() {
-		return numStopWordsCount;
+	public double getStopWordsProportion() {
+		return stopWordsProportion;
 	}
 
 	/**
 	 * @param numStopWordsCount
 	 *            the numStopWordsCount to set
 	 */
-	public void setNumStopWordsCount(int numStopWordsCount) {
-		this.numStopWordsCount = numStopWordsCount;
+	public void setStopWordsProportion(double setStopWordsProportion) {
+		this.stopWordsProportion= setStopWordsProportion;
 	}
 
 	/**
@@ -145,10 +145,10 @@ public class Document {
 	 */
 	@Override
 	public String toString() {
-		return "Features [ numStopWordsCount=" + numStopWordsCount
-				+ ", numWords=" + numWords + ", positiveWordProportion=" + positiveWordProportion
-				+ ", negativeWordProportion=" + negativeWordProportion + ", numNouns=" + numNouns + ", numAdjectives="
-				+ numAdjectives +",inputDoc=" + Arrays.toString(inputDoc) +  "]";
+		return "Features [ numStopWordsCount=" + stopWordsProportion + ", numWords=" + numWords
+				+ ", positiveWordProportion=" + positiveWordProportion + ", negativeWordProportion="
+				+ negativeWordProportion + ", numNouns=" + numNouns + ", numAdjectives=" + numAdjectives + ",inputDoc="
+				+ Arrays.toString(inputDoc) + "]";
 	}
 
 }
