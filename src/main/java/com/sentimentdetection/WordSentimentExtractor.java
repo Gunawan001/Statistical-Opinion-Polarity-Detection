@@ -31,9 +31,11 @@ public class WordSentimentExtractor {
 	public void loadSentiments(String pathToSWN) throws IOException {
 
 		String inputFile = FileUtils.readFileToString(new File(this.getClass().getResource(pathToSWN).getFile()));
-
+		System.out.println(inputFile.length());
 		for (String line : inputFile.split(DataPreparationHelper.LINE_TOKENIZER_REGEX)) {
-			if (!line.trim().startsWith("#")) {
+	
+			if (line.trim().length()>0 && !line.trim().startsWith("#")) {
+				//System.out.println(line);
 				String[] data = line.split("\t");
 				if (Double.parseDouble(data[2]) != 0.0 && Double.parseDouble(data[3]) != 0.0) {
 					String[] inputs = data[4].split(" ");
