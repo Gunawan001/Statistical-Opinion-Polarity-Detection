@@ -21,12 +21,6 @@ import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 /**
- * MCAP Logistic Regression algorithm with L2 regularization
- * 
- * This class is implementation of Text Classifier that uses Logistic Regression
- * approach. This approach involves calculation of P(y|x) based on trained
- * model. We use gradient ascent approach in order to reach the global maxima.
- * 
  * @author Kanchan Waikar Date Created : Mar 15, 2016 - 6:44:13 PM
  *
  */

@@ -3,14 +3,14 @@ package com.sentimentdetection;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
 import com.sentimentdetection.common.SentimentType;
 import com.sentimentdetection.common.WordNetSentiment;
-
-import edu.mit.jwi.item.IWord;
 
 /**
  * This class returns polarity of polar words.
@@ -47,6 +47,30 @@ public class WordSentimentExtractor {
 				}
 			}
 		}
+	}
+	public static void main(String[] args) {
+		String name = "dhanu";
+		Map<String,Integer> emptyMap = new HashMap<String,Integer>();
+		
+		Map<String, Integer> map = maintainQueue(emptyMap,name); 
+		map = maintainQueue(map,"kanchan");
+		map = maintainQueue(map,"dhanu");
+	}
+	/**
+	 * @param name
+	 * @return
+	 */
+	public static Map<String, Integer> maintainQueue(Map<String,Integer>map,String name) {
+		if(map.get(name)!=null)
+		{
+			 map.put(name, new Integer((map.get(name))+1));
+		}
+		else
+		{
+			map.put(name,1);
+		}
+		System.out.println(map);
+		return map;
 	}
 
 	/**
