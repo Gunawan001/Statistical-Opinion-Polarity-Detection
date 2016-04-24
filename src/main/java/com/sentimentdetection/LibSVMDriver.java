@@ -6,15 +6,21 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import libsvm.svm;
+import libsvm.svm_model;
+import libsvm.svm_node;
+import libsvm.svm_parameter;
+import libsvm.svm_problem;
+
 public class LibSVMDriver {
 	public static void main(String args[]) throws IOException{
 //		Runtime rt = Runtime.getRuntime();
-		System.out.println("HIHIHIHI");
+		
 //		Process pr = rt.exec("java -jar map.jar time.rel test.txt debug");
 //		System.out.println("HI Prathima");
 		svm_parameter param=new svm_parameter();
         param.svm_type=svm_parameter.C_SVC;
-        param.kernel_type=svm_parameter.RBF;
+        param.kernel_type=svm_parameter.LINEAR;
         param.gamma=0.5;
         param.nu=0.5;
         param.cache_size=20000;
@@ -26,13 +32,13 @@ public class LibSVMDriver {
         HashMap<Integer, HashMap<Integer, Double>> featuresTraining=new HashMap<Integer, HashMap<Integer, Double>>();
         HashMap<Integer, Integer> labelTraining=new HashMap<Integer, Integer>();
         HashMap<Integer, HashMap<Integer, Double>> featuresTesting=new HashMap<Integer, HashMap<Integer, Double>>();
-
+        HashMap<Integer, Integer> labelTest=new HashMap<Integer, Integer>();
         HashSet<Integer> features=new HashSet<Integer>();
 
         //Read in training data
         BufferedReader reader=null;
         try{
-            reader=new BufferedReader(new FileReader("C:/Users/pratima/Downloads/aclImdb_v1 (1)/aclImdb/train/labeledBow.feat"));
+            reader=new BufferedReader(new FileReader("C:/Users/pratima/Downloads/aclImdb_v1 (1)/aclImdb/train/smalltrain.feat"));
             String line=null;
             int lineNum=0;
             while((line=reader.readLine())!=null){
@@ -72,13 +78,20 @@ public class LibSVMDriver {
         
         //Read in test data
         try{
-            reader=new BufferedReader(new FileReader("C:/Users/pratima/Downloads/aclImdb_v1 (1)/aclImdb/test/labeledBow.feat"));
+            reader=new BufferedReader(new FileReader("C:/Users/pratima/Downloads/aclImdb_v1 (1)/aclImdb/test/smalltest.feat"));
             String line=null;
             int lineNum=0;
             while((line=reader.readLine())!=null){
 
                 featuresTesting.put(lineNum, new HashMap<Integer,Double>());
                 String[] tokens=line.split("\\s+");
+                int label=Integer.parseInt(tokens[0]);
+                System.out.println("lbel "+label);
+                if(label<5)
+                	label=0;
+                else
+                	label=1;
+                labelTest.put(lineNum, label);
                 for(int i=1; i<tokens.length;i++){
                     String[] fields=tokens[i].split(":");
                     int featureId=Integer.parseInt(fields[0]);
@@ -88,17 +101,19 @@ public class LibSVMDriver {
                 }
             lineNum++;
             }
+            //System.out.println(lineNum);
             reader.close();
         }catch (Exception e){
 
         }//ENd Training Data
-        
+       // System.out.println(labelTest.size());
         svm_problem prob=new svm_problem();
         int numTrainingInstances=featuresTraining.keySet().size();
         prob.l=numTrainingInstances;
         prob.y=new double[prob.l];
         prob.x=new svm_node[prob.l][];
         System.out.println(prob.y);
+        double num=0.0;
         
         for(int i=0;i<numTrainingInstances;i++){
             HashMap<Integer,Double> tmp=featuresTraining.get(i);
@@ -122,11 +137,11 @@ public class LibSVMDriver {
 
         for(Integer testInstance:featuresTesting.keySet()){
         	
-        	//System.out.println("loop");
+        	//System.out.println(testInstance);
         	
             HashMap<Integer, Double> tmp=featuresTesting.get(testInstance);
             int numFeatures=tmp.keySet().size();
-            System.out.println(numFeatures);
+            //System.out.println(numFeatures);
             svm_node[] x=new svm_node[numFeatures];
             int featureIndx=0;
             for(Integer feature:tmp.keySet()){
@@ -138,9 +153,12 @@ public class LibSVMDriver {
 
             double d=svm.svm_predict(model, x);
 
-            System.out.println(testInstance+"\t"+d);
+            System.out.println(labelTest.get(testInstance)+"\t"+d);
+            double val=(double)labelTest.get(testInstance);
+            if(val==d)
+            	num++;
         }
 
-
+       System.out.println(num/(double)labelTest.size());
 	}
 }
