@@ -50,14 +50,7 @@ public class WordSentimentExtractor {
 			}
 		}
 	}
-	public static void main(String[] args) {
-		String name = "dhanu";
-		Map<String,Integer> emptyMap = new HashMap<String,Integer>();
-		
-		Map<String, Integer> map = maintainQueue(emptyMap,name); 
-		map = maintainQueue(map,"kanchan");
-		map = maintainQueue(map,"dhanu");
-	}
+ 
 	/**
 	 * @param name
 	 * @return

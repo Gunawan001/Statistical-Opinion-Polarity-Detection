@@ -3,6 +3,7 @@ package com.sentimentdetection;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,11 +22,13 @@ import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 /**
- * @author Kanchan Waikar Date Created : Mar 15, 2016 - 6:44:13 PM
+ * @author Kanchan Waikar
+ * 
+ *         Date Created : Mar 15, 2016 - 6:44:13 PM
  *
  */
 public class DataPreparationHelper {
-	public static final String NOUN_PREFIX = "NN";
+	public static final String NOUN_PREFIX = "NNP";
 	public static final String ADJECTIVE_PREFIX = "JJ";
 	public static final String VERB_PREFIX = "VB";
 	public static final String NON_ALPHABET_CHARS = "[^\\dA-Za-z ]";
@@ -65,7 +68,7 @@ public class DataPreparationHelper {
 	 */
 	public void setNumStopWords(Document featureDoc) {
 		int numStopWordsFound = 0;
-		int numCount=0;
+		int numCount = 0;
 		for (String sentence : featureDoc.getInputDoc()) {
 			String[] split = sentence.split("( |\t)");
 			for (String word : split) {
@@ -75,7 +78,7 @@ public class DataPreparationHelper {
 				}
 			}
 		}
-		featureDoc.setStopWordsProportion((double)numStopWordsFound/numCount);
+		featureDoc.setStopWordsProportion((double) numStopWordsFound / numCount);
 		featureDoc.setNumWords(numCount);
 	}
 
@@ -130,12 +133,27 @@ public class DataPreparationHelper {
 								break;
 							}
 						}
+						else
+						{
+							SentimentType sentimentType = sentiExtractor.getSentimentForAdjective(tw.word());
+							switch (sentimentType) {
+							case POSITIVE:
+								numPositives++;
+								break;
+							case NEGATIVE:
+								numNegatives++;
+								break;
+							case NEUTRAL:
+								numNeutrals++;
+								break;
+							}
+						}
 					}
 				}
 			}
 		}
-		featuresDoc.setPositiveWordProportion(((double)numPositives/(numNeutrals+numPositives+numNegatives)));
-		featuresDoc.setNegativeWordProportion(((double)numNegatives/(numNeutrals+numPositives+numNegatives)));
+		featuresDoc.setPositiveWordProportion(((double) numPositives / (featuresDoc.getNumWords())));
+		featuresDoc.setNegativeWordProportion(((double) numNegatives / (featuresDoc.getNumWords())));
 		featuresDoc.setNumAdjectives(numAdjectives);
 		featuresDoc.setNumNouns(numNounEntities);
 		featuresDoc.setNumVerbs(numVerbs);
@@ -145,22 +163,38 @@ public class DataPreparationHelper {
 
 		DataPreparationHelper helper = new DataPreparationHelper();
 		helper.loadStopWordsAndSentiments();
+		StringBuilder sb = new StringBuilder();
+		sb.append(
+				"stopWordsProportion,numWords,positiveWordProportion,negativeWordProportion,numNouns,numAdjectives,numVerbs,class\n");
 
 		if (args.length != 1) {
 			System.out.println("Please provide input directory path for training:");
 			System.exit(0);
 		}
 		File parentFolder = new File(args[0]);
+		int counter = 0;
 		if (parentFolder.exists()) {
 			System.out.println("Training on");
 			File[] classes = parentFolder.listFiles();
 			for (File file : classes) {
+				// for (String prefix : prefixes) {
+				// if (file.getName().contains(prefix)) {
 				Document document = new Document(FileUtils.readFileToString(file).split(SIMPLE_TOKENIZER_REGEX));
 				helper.setNumStopWords(document);
 				helper.setNLPFeatures(document);
-				System.out.println(document);
+				sb.append((int) ((double) 100 * document.getStopWordsProportion()) + "," + document.getNumWords() + ","
+						+ (int) ((double) 100 * document.getPositiveWordProportion()) + ","
+						+ (int) ((double) 100 * document.getNegativeWordProportion()) + "," + document.getNumNouns()
+						+ "," + document.getNumAdjectives() + "," + document.getNumVerbs() + ","
+						+ parentFolder.getName() + "\n");
+				System.out.println(counter++);
 			}
+			// }
+			// }
 		}
+		File outputFile = new File("FeatureSet_" + new File(parentFolder.getParent()).getName() + "_" + parentFolder.getName() + ".csv");
+		FileUtils.writeStringToFile(outputFile, sb.toString());
+		System.out.println("Output written to " + outputFile.getAbsolutePath());
 	}
 
 	/**

@@ -3,8 +3,8 @@ package com.sentimentdetection;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import libsvm.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class LibSVMDriver {
 	public static void main(String args[]) throws IOException{
