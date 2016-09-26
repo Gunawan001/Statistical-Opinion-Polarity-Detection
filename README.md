@@ -51,6 +51,7 @@ We are using the data set was compiled by Stanford Linguistics Professor Chris P
 Stanford CS PhD student Andrew Maas . There are 25000 training examples and 25000 test
 examples, each of which is a textual review of a movie on IMDB . Some preprocessing (namely,
 bag of words encoding) has already been performed on the raw text.
+
 ● 80 MB compressedData set Link : Movie Dataset 1
 http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
 o 25000 training examples, 25000 test examples (used for Naive bayes)
@@ -62,12 +63,15 @@ o 1500 samples (used for Rest of the algorithms)
 Another dataset that we intend to use purely for testing purposes is from a different source
 altogether. This data set was Introduced in Pang/Lee ACL 2004. Released June 2004. IT contains
 1000 positive and 1000 negative processed reviews.
+
 ● Polarity Detection Dataset V2.0 : Movie Dataset 2
 IMDB Review classification using Sentiment Analysis 2
 o 1000 positives and 1000 negatives
 This data is available at
 http://www.cs.cornell.edu/people/pabo/moviereviewdata/
 review_polarity.tar.gz
+
+
 Input Feature Set Preparation:
 We decided to extend our feature set by using the additional statistical information that could
 be extracted from the data. We used Stanford Part of Speech tagger in order tag the sentence
@@ -75,35 +79,42 @@ and sentiWordNet in order to extract the polarity of the adjective as well as ve
 Initially when we started, we used LESK algorithm in order to understand the sense of the word
 but we realized that wordnet did not include information about word sense polarity, hence we
 used SentiWordNet for each of the Verb/adjective found in the text
+
 ● stopWordsProportion
 ○ Percentage of stop words present in entire review text. Number of stop words
 can have impact on word polarity detection. More stop words may mean less
 shallow opinion which is why we considered this as one of the input features.
 This is calculated using the formula numStopWords/numWords.
+
 ● numWords
 ○ Number of words in a review may give an insight into how detailed a review is.
 Shorter reviews imply less importance unless they are from very highly sought
 after reviewer. Since we wanted to keep the implementation very generic, we
 did not include features that could not be applied on any other data apart from
 imdb or even review data.
+
 ● positiveWordProportion
 ○ This is a Percentage number between 0100
 corresponding to number of words
 that are positive this
 is calculated using the formula Positives/total number of
 words
+
 ● negativeWordProportion
 ○ This is a Percentage number between 0100
 corresponding to number of words
 that are negativethis
 is calculated using the formula negatives/total number of
 words
+
 ● numNouns
 ○ Although at shallow level it does not seem to be a valid feature input, but it does
 give an insight into how relevant a review could be. More Proper nouns can hint
 more appropriate review as opposed to the one in which there are very few.
+
 ● numAdjectives
 ○ Number of adjectives have impact on polarity depth of the content
+
 ● numVerbs
 IMDB Review classification using Sentiment Analysis 3
 ○ Number of verbs can have impact on polarity depth of the content
@@ -116,16 +127,22 @@ API for adjective/Verb polarity extraction
 ● Java ML
 ● Stanford POS Tagger
 ● Weka Library
+
+
 System Architecture:
 The system would have following important components.
+
 ● Feature extractor
 ○ This Extractor is named as DataPreparationHelper and it creates a CSV file that
 needs to be converted into ARFF format
+
 ● model trainer
 ○ This class is named as GenericClassifier and has different JavaML
 Implementations.
 Architecture Diagram
 IMDB Review classification using Sentiment Analysis 4
+
+
 3.2 Results:
 Input Data Set used: Data Set 1
 Sr. No Approach Feature Set Training
@@ -163,7 +180,9 @@ Feature Set Used: (Custom Features)
 When we use the feature Set of stopWordsProportion , numWords, positiveWordProportion,
 negativeWordProportion, numNouns ,numAdjectives, numVerbs, as input we get following as
 our output.
+
 ● Training : resources/training.arff
+
 ● Test: resources/test.arff
 Statistics
 Sr. No Approach Training
@@ -210,6 +229,8 @@ Words
 2. Naive Bayes Bag of Words
 With Stop Words
 99.46 58.0
+
+
 Feature Set Used: (Custom Features)
 When we use the feature Set of stopWordsProportion , numWords, positiveWordProportion,
 negativeWordProportion, numNouns ,numAdjectives, numVerbs, as input we get following as
@@ -250,6 +271,7 @@ With k=75
 FP=380.0,
 TN=371.0,
 FN=303.0
+
 3.3 Discussion
 We can clearly see that when test data does not belong to the domain of training data, the
 model suffers when bag of words approach is used. This is because the training model and test
@@ -258,6 +280,7 @@ predicted value.
 Statistical approach does show almost constant results as they do the prediction that is
 independent of the domain. This proves that linguistic feature information can be further tuned
 and can be used for domain independent prediction of the polarity.
+
 4. Related Work
 There have been studies that have tried to solve the problem of polarity identification on single
 domain data and have proven that SVM performs better than other classifiers [
